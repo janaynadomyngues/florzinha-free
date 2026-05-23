@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="theme-color" content="#fdf6ef"/>
+<title>Florzinha</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Georgia',serif;background:#ede8e2;min-height:100svh;display:flex;justify-content:center;overflow-x:hidden}
+  #app{width:100%;max-width:430px;min-height:100svh;position:relative}
+  @keyframes ff{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-12px) rotate(6deg)}}
+  @keyframes fu{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  .fu{animation:fu .4s ease forwards}
+  .card{background:rgba(255,255,255,0.82);border-radius:18px;padding:20px 22px;
+    backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.94);box-shadow:0 3px 14px rgba(0,0,0,0.05)}
+  .btn{border:none;border-radius:50px;padding:14px;font-family:'Nunito',sans-serif;
+    font-size:15px;font-weight:700;cursor:pointer;transition:transform .15s;display:block;
+    width:100%;text-align:center;margin-bottom:10px}
+  .btn:active{transform:scale(.97)}
+  .qop{background:rgba(255,255,255,0.82);border:1.5px solid rgba(255,255,255,0.94);
+    border-radius:14px;padding:15px 18px;font-family:'Nunito',sans-serif;font-size:14px;
+    cursor:pointer;text-align:left;width:100%;color:#4a2c1a;backdrop-filter:blur(8px);
+    display:flex;align-items:center;gap:12px;transition:transform .14s,background .14s;margin-bottom:11px}
+  .qop:hover{background:rgba(255,255,255,.96);transform:translateX(3px)}
+  .qop:active{transform:scale(.98)}
+  .modcard{width:100%;background:rgba(255,255,255,0.82);border-radius:16px;padding:16px 18px;
+    margin-bottom:11px;border:1.5px solid rgba(255,255,255,0.94);display:flex;align-items:center;
+    gap:14px;cursor:pointer;backdrop-filter:blur(10px);text-align:left;
+    box-shadow:0 2px 10px rgba(0,0,0,0.04);transition:transform .14s}
+  .modcard:hover{transform:translateX(3px)}
+  .modcard:active{transform:scale(.98)}
+  .flores{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+  .flor{position:absolute;opacity:.1;animation:ff linear infinite}
+  .navbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;
+    background:rgba(255,255,255,0.96);backdrop-filter:blur(14px);
+    border-top:1px solid rgba(0,0,0,0.07);display:flex;padding:10px 0 20px;z-index:300}
+  .navbtn{flex:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;
+    align-items:center;gap:3px;padding:0;opacity:.5;transition:opacity .2s}
+  .navbtn.ativo{opacity:1}
+  .navbtn span.icon{font-size:21px}
+  .navbtn span.lbl{font-family:'Nunito',sans-serif;font-size:11px;color:#888}
+  .input-nome{width:100%;padding:15px 20px;border-radius:50px;
+    border:1.5px solid rgba(160,82,45,0.25);font-family:'Nunito',sans-serif;
+    font-size:15px;color:#5c3d2e;background:rgba(255,255,255,0.9);
+    outline:none;margin-bottom:12px;text-align:center}
+  .prog-bar{height:4px;border-radius:2px;background:rgba(160,82,45,0.15);margin-bottom:24px;overflow:hidden}
+  .prog-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#c2846a,#a0522d);transition:width .4s ease}
+  .tempgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+  .tempcard{background:rgba(255,255,255,0.82);border-radius:16px;padding:18px 12px;
+    border:1.5px solid rgba(255,255,255,0.94);display:flex;flex-direction:column;
+    align-items:center;gap:6px;cursor:pointer;backdrop-filter:blur(10px);transition:transform .14s}
+  .tempcard:hover{transform:scale(1.03)}
+  .tempcard:active{transform:scale(.97)}
+  .dia-btn{width:100%;border:none;border-radius:14px;padding:14px 18px;margin-bottom:10px;
+    font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;cursor:pointer;
+    text-align:left;display:flex;align-items:center;gap:10px;transition:transform .14s}
+  .dia-btn:active{transform:scale(.98)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const TEMAS = {
+  melancolico:{bg:"linear-gradient(160deg,#f3f0ff,#e8e0f5,#d1c4e9)",cor:"#5e35b1",corTexto:"#4527a0",corClara:"#ede7f6",emoji:"🌙",nome:"Melancólico",apelido:"Alma Profunda",versiculo:{texto:"Porque eu bem sei os pensamentos que tenho a vosso respeito, diz o Senhor; pensamentos de paz e não de mal, para vos dar o fim que esperais.",ref:"Jeremias 29:11"},dons:["Profundidade e sensibilidade únicas","Lealdade e fidelidade","Criatividade e percepção artística","Capacidade de intercessão","Dedicação saudável"],desafios:["Autocrítica excessiva","Perfeccionismo paralisante","Tendência à tristeza e isolamento","Dificuldade em confiar","Medo de errar"]},
+  sanguineo:{bg:"linear-gradient(160deg,#fff0f5,#ffd6e0,#ffb3c6)",cor:"#c2185b",corTexto:"#880e4f",corClara:"#f8bbd0",emoji:"🌸",nome:"Sanguíneo",apelido:"Florzinha Solar",versiculo:{texto:"Alegrai-vos sempre no Senhor; outra vez digo, alegrai-vos.",ref:"Filipenses 4:4"},dons:["Alegria contagiante e carisma","Comunicação e expressividade","Empatia emocional intensa","Criatividade e espontaneidade","Capacidade de inspirar"],desafios:["Impulsividade e instabilidade emocional","Dificuldade de foco e constância","Busca constante por aprovação","Superficialidade nos relacionamentos"]},
+  colerico:{bg:"linear-gradient(160deg,#fff8f0,#ffe0b2,#ffb74d)",cor:"#e65100",corTexto:"#bf360c",corClara:"#ffe0b2",emoji:"🔥",nome:"Colérico",apelido:"Guerreira de Propósito",versiculo:{texto:"Não por força, nem por poder, mas pelo meu Espírito, diz o Senhor dos Exércitos.",ref:"Zacarias 4:6"},dons:["Liderança natural e visão estratégica","Determinação e coragem","Capacidade de realizar e transformar","Foco em resultados","Força para inspirar"],desafios:["Impaciência e impulsividade","Dificuldade em ouvir e ceder","Tendência ao controle e orgulho","Dureza emocional"]},
+  fleumatico:{bg:"linear-gradient(160deg,#f0fff4,#c8e6c9,#a5d6a7)",cor:"#2e7d32",corTexto:"#1b5e20",corClara:"#e8f5e9",emoji:"🕊️",nome:"Fleumático",apelido:"Paz que Floresce",versiculo:{texto:"Quem sabe se não foi para um momento como este que você chegou à posição que ocupa?",ref:"Ester 4:14"},dons:["Paz e estabilidade contagiantes","Diplomacia e mediação","Lealdade profunda","Paciência e constância","Presença segura"],desafios:["Passividade e procrastinação","Dificuldade em se posicionar","Tendência à acomodação","Silenciar sentimentos"]}
+};
+
+const PERGUNTAS = [
+  {q:"Quando você acorda de manhã, qual é o seu primeiro sentimento predominante?",ops:[{t:"Animação e energia para começar",k:"sanguineo"},{t:"Já pensando em tudo que precisa fazer e resolver",k:"colerico"},{t:"Uma certa preocupação, pensando no que pode dar errado",k:"melancolico"},{t:"Tranquilidade, sem pressa, levando como vier",k:"fleumatico"}]},
+  {q:"Quando alguém te critica, qual é sua reação mais natural?",ops:[{t:"Fica magoada por dentro, guarda e pensa muito",k:"melancolico"},{t:"Responde na hora, pode falar mais do que devia",k:"colerico"},{t:"Fica chateada mas logo esquece e leva na leveza",k:"sanguineo"},{t:"Absorve em silêncio, evita conflito",k:"fleumatico"}]},
+  {q:"Como você age quando tem uma decisão importante para tomar?",ops:[{t:"Analisa profundamente, pesquisa muito, quer ter certeza",k:"melancolico"},{t:"Decide rápido, confia no instinto",k:"colerico"},{t:"Procrastina, prefere que as coisas se resolvam sozinhas",k:"fleumatico"},{t:"Decide com o coração, às vezes por impulso",k:"sanguineo"}]},
+  {q:"Numa reunião em grupo, qual é o seu papel mais natural?",ops:[{t:"Naturalmente assume a liderança, dá as diretrizes",k:"colerico"},{t:"Anima o grupo, fala bastante, conecta as pessoas",k:"sanguineo"},{t:"Observa mais do que fala, analisa antes de se posicionar",k:"melancolico"},{t:"Está presente mas prefere não chamar atenção",k:"fleumatico"}]},
+  {q:"Como você lida quando alguém ao seu redor está sofrendo?",ops:[{t:"Sente a dor junto, às vezes até mais do que a própria pessoa",k:"melancolico"},{t:"Já quer resolver, dá soluções práticas imediatamente",k:"colerico"},{t:"Abraça, conforta, chora junto — muito empática",k:"sanguineo"},{t:"Fica ao lado com calma e estabilidade",k:"fleumatico"}]},
+  {q:"Quando você erra em algo importante, como reage?",ops:[{t:"Fica se culpando por muito tempo, difícil se perdoar",k:"melancolico"},{t:"Reconhece, mas segue em frente rapidamente",k:"colerico"},{t:"Sente muito na hora, mas logo consegue superar",k:"sanguineo"},{t:"Aceita com tranquilidade, encontra paz com o tempo",k:"fleumatico"}]},
+  {q:"Como é a sua organização no dia a dia?",ops:[{t:"Muito organizada, listas, lugar certo para tudo",k:"melancolico"},{t:"Organizada quando precisa, foca mais em resultados",k:"colerico"},{t:"Um pouco caótica, começa muitas coisas ao mesmo tempo",k:"sanguineo"},{t:"Organização básica, funciona no seu próprio ritmo",k:"fleumatico"}]},
+  {q:"O que as pessoas mais costumam dizer de você?",ops:[{t:"Que você é exigente, perfeccionista",k:"melancolico"},{t:"Que você é intensa, determinada, às vezes impaciente",k:"colerico"},{t:"Que você é alegre, divertida, a vida da festa",k:"sanguineo"},{t:"Que você é calma, confiável, sempre estável",k:"fleumatico"}]},
+  {q:"Quando você está sob pressão ou estressada, o que acontece?",ops:[{t:"Fecha em si mesma, fica quieta, se isola",k:"melancolico"},{t:"Fica irritada, impaciente, pode explodir",k:"colerico"},{t:"Fica ansiosa, agitada, fala muito, chora",k:"sanguineo"},{t:"Trava, fica paralisada, evita tudo",k:"fleumatico"}]},
+  {q:"Como você se sente em relação aos seus sonhos e metas?",ops:[{t:"Sonha muito, planeja muito, mas o medo às vezes paralisa",k:"melancolico"},{t:"Tem o plano na cabeça e vai atrás com determinação",k:"colerico"},{t:"Tem mil sonhos ao mesmo tempo, se empolga facilmente",k:"sanguineo"},{t:"Prefere não se preocupar, confia que vai dar certo",k:"fleumatico"}]},
+  {q:"Quando precisa pedir ajuda ou demonstrar vulnerabilidade?",ops:[{t:"Tem dificuldade, prefere resolver sozinha para não parecer fraca",k:"colerico"},{t:"Tem dificuldade — sente que vai incomodar ou ser julgada",k:"melancolico"},{t:"Pede ajuda com facilidade, sem problema em mostrar que precisa",k:"sanguineo"},{t:"Deixa pra ver se resolve sozinho, evita movimentar as coisas",k:"fleumatico"}]},
+  {q:"Na sua vida de fé — oração, Bíblia, tempo com Deus — como você costuma ser?",ops:[{t:"Momentos muito profundos, chora — mas também momentos de seca e culpa",k:"melancolico"},{t:"Ora com determinação, tem metas espirituais, é intensa na fé",k:"colerico"},{t:"Ama louvor, celebração, grupos de oração — fé expressiva e emocional",k:"sanguineo"},{t:"Fé tranquila, constante, sem grandes altos e baixos",k:"fleumatico"}]},
+  {q:"Como você lida com mudanças na sua vida?",ops:[{t:"Com dificuldade, precisa de tempo para processar",k:"melancolico"},{t:"Enfrenta de frente, pode até gostar do desafio",k:"colerico"},{t:"Se adapta rápido, às vezes até gosta de novidade",k:"sanguineo"},{t:"Prefere estabilidade, mas aceita quando precisa, com calma",k:"fleumatico"}]},
+  {q:"Nos seus relacionamentos, qual é a sua maior dificuldade?",ops:[{t:"Abrir o coração e confiar completamente",k:"melancolico"},{t:"Ceder, ouvir sem querer resolver ou controlar",k:"colerico"},{t:"Manter constância e profundidade — às vezes superficial demais",k:"sanguineo"},{t:"Se posicionar, falar o que sente",k:"fleumatico"}]},
+  {q:"Se você pudesse escolher uma palavra que define como quer ser vista, qual seria?",ops:[{t:"Fiel, profunda, significativa",k:"melancolico"},{t:"Forte, capaz, realizada",k:"colerico"},{t:"Alegre, amada, conectada",k:"sanguineo"},{t:"Paz, equilíbrio, harmonia",k:"fleumatico"}]}
+];
+
+// CONTEÚDO DO PROPÓSITO (fixo)
+const PROPOSITO = {
+  melancolico:{
+    titulo:"🌙 Alma Profunda",
+    como_deus:"Deus te criou com olhos que enxergam além da superfície. Enquanto o mundo passa correndo, você para. Você sente o peso das coisas, a beleza escondida, a dor que ninguém nomeia. Isso não é fraqueza — é um chamado profético.",
+    feito_para:"Você é a intercessora que ora com profundidade genuína. A conselheira que ouve de verdade. A criadora que produz arte, palavras e conteúdo que tocam a alma. Sua sensibilidade não é excesso — é o instrumento que Deus usa para chegar onde nenhuma lógica alcança.",
+    dons_reino:["Intercessão profunda — você ora com uma entrega que poucos conseguem","Aconselhamento e acolhimento — você cria espaço seguro para quem carrega dor","Criação de conteúdo, arte e escrita que toca a alma","Ensino bíblico com profundidade e detalhes","Ser a pessoa que enxerga quem está sofrendo em silêncio"],
+    personagem:"Maria de Betânia — ela parou enquanto o mundo exigia que fosse útil. Escolheu ficar aos pés de Jesus. E foi exatamente nessa profundidade silenciosa que fez o que nenhum discípulo teve coragem de fazer — ungiu Jesus antes da cruz. Sua contemplação virou profecia.",
+    sabotagem:"\"Não estou pronta ainda. Quando eu melhorar, quando for mais consistente — aí sim vou poder ser usada por Deus.\" Essa voz te paralisa com uma perfeição que nunca chega.",
+    verdade:"Deus não esperou que Maria fosse produtiva para usá-la. Você não precisa se consertar para florescer. Você precisa se entregar.",
+    versiculo:"\"Porque somos feitura sua, criados em Cristo Jesus para boas obras, as quais Deus preparou de antemão para que andássemos nelas.\" — Efésios 2:10",
+    oracao:"Senhor, eu solto a exigência de ser perfeita antes de ser usada. Confio que o dom que Tu colocaste em mim — essa profundidade, essa sensibilidade — já é suficiente para o Teu propósito. Usa minha alma sensível para tocar almas que só ela consegue alcançar. Amém."
+  },
+  sanguineo:{
+    titulo:"🌸 Florzinha Solar",
+    como_deus:"Deus te criou como luz. Uma luz que entra, ilumina e transforma o ambiente. Sua alegria não é superficialidade — é um dom sobrenatural. Em um mundo pesado, você foi criada para lembrar as pessoas de que há motivo para sorrir.",
+    feito_para:"Você é a evangelista que não precisa de roteiro — ela contagia. A comunicadora que explica o evangelho de um jeito que qualquer pessoa entende. A ponte entre quem está longe de Deus e quem pode apresentá-lo. Você não convence pelo argumento — transforma pelo amor.",
+    dons_reino:["Evangelismo natural — você atrai pessoas e cria conexão onde vai","Comunicação do evangelho com leveza, criatividade e emoção","Criar comunidades e ambientes de acolhimento","Ser a pessoa que abre a porta da fé para quem estava longe","Inspirar e animar equipes e ministérios"],
+    personagem:"A Mulher Samaritana — extrovertida, comunicativa, com uma história complicada. Mas quando encontrou Jesus no poço, não ficou quieta. Largou o cântaro e foi contar para todo mundo. Uma cidade inteira foi ao encontro de Jesus por causa dela.",
+    sabotagem:"\"Sou leviana demais. Ninguém vai me levar a sério. Propósito é coisa séria — e eu sou muito animada, muito demais.\" Essa voz usa seu maior dom contra você.",
+    verdade:"A Mulher Samaritana não tinha credencial — tinha um encontro real com Jesus e uma boca que não conseguia ficar quieta. Deus não precisa que você seja sóbria e séria. Ele precisa que você seja você.",
+    versiculo:"\"Alegrai-vos sempre no Senhor; outra vez digo, alegrai-vos.\" — Filipenses 4:4",
+    oracao:"Senhor, eu recebo minha alegria como missão, não como distração. Que minha energia seja direcionada pelo Teu Espírito. Usa minha voz, minha presença, meu sorriso — tudo isso é Teu. Amém."
+  },
+  colerico:{
+    titulo:"🔥 Guerreira de Propósito",
+    como_deus:"Deus te criou com fogo. Uma determinação que move montanhas, uma visão que enxerga o que ainda não existe, uma coragem que age quando os outros ainda estão pensando. Você não foi criada para seguir — foi criada para iniciar.",
+    feito_para:"Você é a líder que começa o que precisa ser começado. A pioneira que funda ministérios, abre igrejas, cria projetos, transforma estruturas. A voz que chama à ação quando todos estão paralisados pelo medo.",
+    dons_reino:["Iniciar e liderar ministérios, projetos e movimentos","Ser a voz profética que convoca à ação e à mudança","Transformar estruturas injustas com determinação e coragem","Liderar equipes e capacitar pessoas","Ser a pessoa que não desiste quando o projeto de Deus enfrenta resistência"],
+    personagem:"Débora — juíza, profetisa e líder militar numa época em que nenhuma mulher ocupava esse espaço. Ela não esperou permissão. Quando Baraque hesitou, ela disse: eu vou com você. Sua determinação libertou Israel inteiro.",
+    sabotagem:"\"Tenho que fazer tudo sozinha. Se eu depender de alguém vai atrasar, vai errar.\" Essa voz disfarça o medo de confiar de força. E te deixa sozinha carregando o que foi feito para ser dividido.",
+    verdade:"Débora era forte — mas chamou Baraque. Sua força é real. Mas força que não aprende a confiar se torna prisão. Deus quer que você lidere com a força Dele, não só com a sua.",
+    versiculo:"\"Não por força, nem por poder, mas pelo meu Espírito, diz o Senhor dos Exércitos.\" — Zacarias 4:6",
+    oracao:"Senhor, eu entrego minha força nas Tuas mãos. Não quero liderar pelo meu poder — quero ser conduzida pelo Teu Espírito. Que eu seja pioneira pelo Teu amor, não pela minha vontade. Amém."
+  },
+  fleumatico:{
+    titulo:"🕊️ Paz que Floresce",
+    como_deus:"Deus te criou como paz. Não a paz vazia — a paz que o mundo não consegue fabricar. Você carrega algo raro: a capacidade de entrar em qualquer ambiente e baixar a temperatura, criar segurança, fazer as pessoas se sentirem em casa.",
+    feito_para:"Você é a mediadora que resolve o que a força não consegue. A intercessora silenciosa que sustenta em oração sem precisar de palco. O porto seguro que permite que outros floresçam porque se sentem seguros perto de você.",
+    dons_reino:["Intercessão e oração silenciosa que sustenta o que outros constroem","Mediação e reconciliação — você resolve conflitos que outros aumentam","Ser presença de cura e segurança para pessoas ansiosas","Sustentar equipes e famílias com estabilidade e lealdade","Acolher quem chegou machucado"],
+    personagem:"Rute — sem grandes discursos, sem liderança de multidões. Mas com uma lealdade inabalável que moveu o coração de Deus. Passo a passo, sem pressa, sem forçar — ela foi fiel. E essa fidelidade tranquila a colocou na linhagem de Jesus.",
+    sabotagem:"\"Quem sou eu para ter um propósito grande? Não tenho a energia nem a profundidade dos outros. Sou só mais uma.\" Essa voz usa sua humildade contra você.",
+    verdade:"Rute não forçou nada — foi fiel passo a passo. Sua paz não é ausência de propósito — é o próprio propósito em forma de presença.",
+    versiculo:"\"Quem sabe se não foi para um momento como este que você chegou à posição que ocupa?\" — Ester 4:14",
+    oracao:"Senhor, eu recebo meu propósito. Não preciso ser barulhenta para ser usada. Que minha paz seja Tua paz. Usa minha lealdade, minha estabilidade, minha capacidade de estar — para o Teu Reino. Amém."
+  }
+};
+
+// CONTEÚDO COMO CONVIVER (fixo por combinação)
+const CONVIVER = {
+  melancolico:{
+    sanguineo:{titulo:"Melancólico + Sanguíneo",texto:"O Sanguíneo parece superficial — mas não é. Ele processa de forma diferente, com leveza. Para o Melancólico que vai fundo em tudo, essa diferença pode gerar frustração. Mas o Sanguíneo tem algo que o Melancólico precisa: leveza. E o Melancólico tem algo que o Sanguíneo precisa: profundidade.",dicas:["Aceite que ele não vai processar igual a você — e tudo bem","Deixe-se contagiar pela alegria dele nos momentos pesados","Ofereça profundidade quando ele precisar, sem forçar","Não leve para o pessoal quando ele mudar de assunto rápido"],versiculo:"\"Suportando-vos uns aos outros em amor.\" — Efésios 4:2"},
+    colerico:{titulo:"Melancólico + Colérico",texto:"O Colérico é rápido, direto e quer resultados. Para o Melancólico que precisa de tempo e sensibilidade, esse jeito pode parecer atropelador. Mas ele não quer te machucar — ele só pensa em velocidade. Quando você entende que a diretividade dele não é falta de cuidado, fica mais fácil conviver.",dicas:["Comunique que precisa de tempo para processar — sem se fechar","Respeite a urgência dele mesmo que o ritmo seja diferente do seu","Valorize a objetividade que ele traz — você tende a complicar","Não interprete o tom direto dele como agressividade"],versiculo:"\"Sede gentis uns para com os outros, compassivos.\" — Efésios 4:32"},
+    fleumatico:{titulo:"Melancólico + Fleumático",texto:"Dois temperamentos quietos — mas muito diferentes por dentro. O Melancólico sente com intensidade e precisa de profundidade. O Fleumático é estável mas às vezes parece distante. Juntos, podem criar uma convivência segura e profunda — se aprenderem a se expressar.",dicas:["Peça ao Fleumático que expresse mais — ele sente, mas não mostra","Compartilhe o que está sentindo em vez de guardar sozinha","Valorize a estabilidade que ele oferece — é rara","Não interprete o silêncio dele como indiferença"],versiculo:"\"O amor é paciente, é benigno.\" — 1 Coríntios 13:4"}
+  },
+  sanguineo:{
+    melancolico:{titulo:"Sanguíneo + Melancólico",texto:"O Melancólico parece distante ou triste — mas está só processando. Para o Sanguíneo que adora interação e movimento, essa quietude pode parecer rejeição. Ele não está mal — está no mundo interior dele. Ele não precisa de animação constante. Precisa de espaço.",dicas:["Não tente 'animar' o Melancólico — respeite o ritmo dele","Ofereça profundidade na conversa quando ele estiver pronto","Valorize a lealdade profunda que ele tem — é rara","Aprenda a ficar em silêncio junto — isso também é amor"],versiculo:"\"Alegrai-vos com os que se alegram e chorai com os que choram.\" — Romanos 12:15"},
+    colerico:{titulo:"Sanguíneo + Colérico",texto:"O Colérico é direto e focado. Para o Sanguíneo que adora conversa e conexão, isso pode parecer frieza. Mas ele se importa — só demonstra diferente. Quando você entende isso, para de se sentir rejeitado e começa a admirar a força dele.",dicas:["Não interprete a objetividade como rejeição","Respeite quando ele quiser ir direto ao ponto","Ofereça leveza nos momentos em que ele estiver tenso","Aprenda a ser mais objetiva — vai ajudar muito a convivência"],versiculo:"\"Sede uns para com os outros bondosos.\" — Efésios 4:32"},
+    fleumatico:{titulo:"Sanguíneo + Fleumático",texto:"O Fleumático é tranquilo e não gosta de drama. Para o Sanguíneo que vive com intensidade emocional, essa calma pode parecer desinteresse. Mas ele está presente — só de forma mais contida. Quando você para de exigir que ele reaja mais, percebe o quanto ele é sólido.",dicas:["Valorize a lealdade silenciosa — ela vale tanto quanto o entusiasmo","Não interprete a calma como falta de amor","Aprenda a diminuir a intensidade quando ele precisar de paz","Deixe-o participar no ritmo dele"],versiculo:"\"A mansidão é grande ganho.\" — 1 Timóteo 6:6"}
+  },
+  colerico:{
+    melancolico:{titulo:"Colérico + Melancólico",texto:"O Melancólico é profundo, detalhista, perfeccionista e sensível. Para o Colérico que quer velocidade e resultados, ele pode parecer lento. Mas ele está pensando em cada detalhe para que o resultado seja perfeito. Respeitar isso não é perder tempo — é ganhar qualidade.",dicas:["Dê espaço para ele processar sem apressar","Valorize a atenção aos detalhes que ele traz","Suavize o tom — ele sente profundamente o que você fala","Peça a opinião dele antes de decidir — a perspectiva dele é valiosa"],versiculo:"\"Sede lentos para falar e tardios para a ira.\" — Tiago 1:19"},
+    sanguineo:{titulo:"Colérico + Sanguíneo",texto:"O Sanguíneo é animado e cheio de ideias. Para o Colérico que quer foco e resultados, isso pode parecer superficialidade. Mas o Sanguíneo traz leveza e alegria que o Colérico precisa. Ele não está perdendo tempo — ele está criando conexão.",dicas:["Valorize a leveza que ele traz — você tende a ser muito sério","Não corrija a animação dele — aprecie o que ela faz pelo ambiente","Aprenda a ouvir as histórias dele sem querer ir logo ao ponto","Celebre as vitórias juntos — ele precisa disso"],versiculo:"\"A alegria do coração é um bom remédio.\" — Provérbios 17:22"},
+    fleumatico:{titulo:"Colérico + Fleumático",texto:"O Fleumático é calmo — e para o Colérico isso pode parecer apatia ou falta de ambição. Mas o Fleumático é o equilíbrio que o mundo precisa. Ele não reage por impulso e mantém a paz. Quando você para de empurrar, ele floresce.",dicas:["Faça pedidos, não ordens — a diferença muda tudo","Respeite o ritmo mais lento — ele vai entregar","Valorize a paz que ele traz — você tende à agitação","Não confunda calma com fraqueza ou desinteresse"],versiculo:"\"Melhor é o paciente do que o poderoso.\" — Provérbios 16:32"}
+  },
+  fleumatico:{
+    melancolico:{titulo:"Fleumático + Melancólico",texto:"O Melancólico e o Fleumático têm muito em comum — ambos são quietos. Mas o Melancólico sente com muito mais intensidade. Quando ele está pesado, o Fleumático tem o dom de ser uma presença estável e acolhedora. Você não precisa ter respostas — só precisa estar lá.",dicas:["Ofereça sua presença quando ele estiver processando algo difícil","Não minimize o que ele sente — para ele é real e intenso","Expresse mais o que sente — ele precisa sentir que você está presente","Valorize a profundidade que ele traz para a convivência"],versiculo:"\"Carregai os fardos uns dos outros.\" — Gálatas 6:2"},
+    sanguineo:{titulo:"Fleumático + Sanguíneo",texto:"O Sanguíneo é animado e cheio de energia. Para o Fleumático que prefere tranquilidade, isso pode ser cansativo. Mas o Sanguíneo traz alegria e movimento — coisas que o Fleumático às vezes precisa. Em vez de se retrair, tente apreciar a leveza que ele oferece.",dicas:["Deixe-se contagiar pela alegria dele de vez em quando","Não se isole quando ele estiver muito animado — participe um pouco","Expresse mais o que sente — o Sanguíneo precisa de conexão","Valorize a vida que ele traz para os ambientes"],versiculo:"\"Um coração alegre faz bem como um remédio.\" — Provérbios 17:22"},
+    colerico:{titulo:"Fleumático + Colérico",texto:"O Colérico é intenso, direto e urgente. Para o Fleumático que ama a paz, isso pode ser opressor. Mas o Colérico não quer te controlar — só quer mover as coisas. Quando você entende isso, fica mais fácil conviver sem se sentir atropelado.",dicas:["Comunique seus limites com calma — ele respeita quem se posiciona","Aprenda a tomar iniciativa antes que ele precise empurrar","Valorize a visão e a energia que ele traz","Não fuja das conversas difíceis — enfrentá-las com paz é seu dom"],versiculo:"\"O manso herdará a terra.\" — Mateus 5:5"}
+  }
+};
+
+// JORNADA - Dia 1 de cada temperamento (conteúdo fixo)
+const JORNADA = {
+  melancolico:[
+    {dia:1,titulo:"Quem eu sou",reflexao:"Você foi criado com uma profundidade que poucos têm. Sua capacidade de sentir, de analisar, de buscar o significado por trás das coisas é um dom extraordinário. Hoje, honre essa profundidade. Ela não é um fardo — é um presente.",frase:"\"Minha profundidade é um dom, não um peso.\"",desafio:"Escreva 3 qualidades suas que você admira — e que talvez não reconheça o suficiente. Seja justo consigo mesmo.",oracao:"Senhor, obrigada por me criar com essa sensibilidade e profundidade. Ajuda-me a enxergá-las como presentes. Amém."},
+    {dia:2,titulo:"Meu perfeccionismo",reflexao:"O Melancólico tem um padrão interno elevadíssimo. Para tudo. Isso gera qualidade e beleza. Mas também gera esgotamento quando a realidade não alcança o ideal. Hoje, pratique aceitar o 'bom o suficiente' sem abandonar o excelente.",frase:"\"Feito com amor é melhor do que perfeito nunca entregue.\"",desafio:"Entregue algo hoje que você estava adiando por não estar 'perfeito ainda'. Que seja bom — não tem que ser perfeito.",oracao:"Pai, liberta-me do perfeccionismo que me paralisa. Que eu dê meu melhor e confie no processo. Amém."},
+    {dia:3,titulo:"Minha autocrítica",reflexao:"Ninguém é mais duro com o Melancólico do que ele mesmo. Cada erro é analisado em detalhes. Hoje, fale consigo mesmo como falaria com alguém que você ama muito. Com gentileza.",frase:"\"Mereço a mesma compaixão que ofereço aos outros.\"",desafio:"Escreva algo que você tem se criticado muito. Agora reescreva como falaria para um amigo querido na mesma situação.",oracao:"Senhor, que eu me trate com a mesma misericórdia que Tu me tratas. Amém."},
+    {dia:4,titulo:"Minha melancolia",reflexao:"Existe uma tristeza que visita o Melancólico às vezes sem aviso. Não é depressão necessariamente — é uma sensibilidade profunda ao peso do mundo. Isso te torna empático de um jeito que poucos são. Acolha essa parte de você com ternura.",frase:"\"Posso sentir sem me perder no sentimento.\"",desafio:"Se sentir melancolia hoje, não a afaste. Sente-se com ela por alguns minutos. Depois, faça algo que te traz beleza — música, natureza, arte.",oracao:"Deus, que minha sensibilidade me aproxime de Ti e das pessoas, não me isole. Amém."},
+    {dia:5,titulo:"Meu isolamento",reflexao:"Quando algo está errado, o Melancólico tende a se fechar. Isso tem seu valor — mas em excesso cria distância de quem te ama. Hoje, pratique dar um passo em direção ao outro mesmo quando a vontade é de fechar a porta.",frase:"\"Pedir ajuda é sábio, não fraco.\"",desafio:"Compartilhe algo que está processando com alguém de confiança. Não precisa ser tudo — só um pouquinho.",oracao:"Senhor, que eu não me isole quando preciso de ajuda. Amém."},
+    {dia:6,titulo:"Minha lealdade",reflexao:"O Melancólico é profundamente leal. Quando ama, ama de verdade. Quando se compromete, cumpre. Esse dom é raro e precioso. Hoje, reconheça esse aspecto lindo em você.",frase:"\"Minha lealdade é uma das minhas maiores riquezas.\"",desafio:"Pense em alguém que tem sido leal a você. Diga a essa pessoa o quanto ela significa — de forma direta e sincera.",oracao:"Obrigada, Senhor, pela capacidade de amar com profundidade e lealdade. Amém."},
+    {dia:7,titulo:"Meu dom é real",reflexao:"Você chegou ao fim da primeira semana. O mundo precisa da sua profundidade, da sua sensibilidade, da sua capacidade de criar beleza. Não tente se tornar outro temperamento. Aprimore o que você já é.",frase:"\"Sou profundo, sensível e estou crescendo.\"",desafio:"Escreva uma carta para si mesmo reconhecendo seus dons. Com carinho, sem autocrítica.",oracao:"Senhor, obrigada por me criar assim. Que eu use minha profundidade para iluminar e não para me isolar. Amém."}
+  ],
+  sanguineo:[
+    {dia:1,titulo:"Quem eu sou",reflexao:"Você é luz. Onde entra, traz alegria, animação e vida. Seu sorriso abre portas, suas histórias prendem a atenção, sua energia é contagiante. O Sanguíneo foi criado para conectar pessoas, para trazer cor ao cinza. Celebre isso.",frase:"\"Minha alegria é um presente para o mundo.\"",desafio:"Escreva 3 qualidades suas que fazem as pessoas ao redor sorrirem. E lembre-se delas com gratidão.",oracao:"Senhor, obrigada por me criar com esse coração alegre. Que eu use essa leveza para iluminar quem está ao meu lado. Amém."},
+    {dia:2,titulo:"Minha necessidade de atenção",reflexao:"O Sanguíneo precisa ser visto. Precisa de aprovação e pertencimento. Isso não é vaidade — é uma necessidade emocional real. O problema aparece quando essa necessidade guia todas as suas escolhas. Hoje, reflita quando você age por amor genuíno e quando age para ser aplaudido.",frase:"\"Meu valor não depende da aprovação dos outros.\"",desafio:"Faça algo bom hoje de forma anônima — sem que ninguém saiba que foi você.",oracao:"Deus, que eu busque a Tua aprovação antes da dos outros. Amém."},
+    {dia:3,titulo:"Minha dispersão",reflexao:"Sua mente é como um jardim cheio de flores — fica difícil focar em uma só. Você começa projetos com entusiasmo e perde o fôlego. Mas algumas coisas bonitas só aparecem para quem persiste. Hoje, escolha uma coisa e fique nela.",frase:"\"Focar também é uma forma de cuidar.\"",desafio:"Escolha uma tarefa que você tem adiado. Dedique 20 minutos a ela hoje — sem distrações.",oracao:"Senhor, ajuda-me a terminar o que começo. Amém."},
+    {dia:4,titulo:"Minha palavra",reflexao:"O Sanguíneo promete com o coração cheio — e às vezes não consegue cumprir. Não por maldade, mas porque a empolgação do momento é maior do que a previsão do futuro. Hoje, cuide da sua palavra. Prometa menos e entregue mais.",frase:"\"Minha palavra vale ouro quando eu a cumpro.\"",desafio:"Pense em um compromisso que você assumiu e não cumpriu. Hoje, dê um passo para honrá-lo.",oracao:"Senhor, que minha palavra seja verdadeira. Amém."},
+    {dia:5,titulo:"Minha sensibilidade",reflexao:"Por baixo de tanta alegria, o Sanguíneo é muito sensível à rejeição. Uma crítica pode derrubar seu dia inteiro. Isso não é fraqueza — é sensibilidade. Mas quando não é cuidada, vira fonte de insegurança.",frase:"\"Críticas me constroem quando eu as ouço com segurança.\"",desafio:"Peça a alguém de confiança uma crítica honesta sobre você. Ouça sem se defender. Agradeça.",oracao:"Deus, que eu seja seguro o suficiente para crescer com as críticas. Amém."},
+    {dia:6,titulo:"Minha constância",reflexao:"O Sanguíneo ama intensamente — mas às vezes de forma inconsistente. As pessoas ao redor sentem essa instabilidade. Amor consistente é o que realmente sustenta um relacionamento. Não precisa ser perfeito — precisa ser presente.",frase:"\"Consistência é uma das formas mais profundas de amor.\"",desafio:"Pense em alguém que você ama mas tem sido inconsistente. Que passo pequeno e consistente você pode dar hoje?",oracao:"Senhor, que meu amor seja constante. Amém."},
+    {dia:7,titulo:"Meu dom é real",reflexao:"O mundo precisa da sua alegria, da sua criatividade, da sua capacidade de conectar pessoas. Não apague isso. Só refine. Um Sanguíneo que conhece a si mesmo é uma força de transformação.",frase:"\"Sou alegria, sou conexão, e estou crescendo.\"",desafio:"Escreva uma carta para si mesmo celebrando quem você é — com todas as suas qualidades e desafios.",oracao:"Obrigada, Senhor, por me criar assim. Que eu continue crescendo com leveza. Amém."}
+  ],
+  colerico:[
+    {dia:1,titulo:"Quem eu sou",reflexao:"Você nasceu com uma força que poucas pessoas têm. Sua determinação, sua energia, sua capacidade de liderar e agir — tudo isso é um dom. O Colérico foi criado para mover montanhas. Mas hoje, antes de olhar para fora, olhe para dentro.",frase:"\"Minha força não é um defeito — é um chamado.\"",desafio:"Escreva 3 qualidades suas que você admira e 1 que ainda quer trabalhar. Seja honesto, sem se julgar.",oracao:"Senhor, obrigada por me criar com essa força. Ajuda-me a usá-la com sabedoria e amor. Amém."},
+    {dia:2,titulo:"Minha intensidade",reflexao:"O Colérico sente tudo com intensidade. Quando quer algo, quer agora. Isso é lindo — mas pode cansar quem está ao redor. Sua intensidade é uma chama. Chama aquece e ilumina, mas também pode queimar se não for cuidada.",frase:"\"Posso ser intenso e ainda assim ser gentil.\"",desafio:"Hoje, em uma situação em que sentir urgência, respire fundo antes de agir. Só isso. Um segundo de pausa intencional.",oracao:"Deus, ensina-me a pausar. Que minha intensidade sirva ao amor e não ao controle. Amém."},
+    {dia:3,titulo:"Minha necessidade de controle",reflexao:"Você funciona melhor quando sente que tem o controle. Isso não é arrogância — é a sua natureza. O problema é que a vida não é controlável. Quando algo foge do seu plano, a frustração aparece rápido. Hoje, convide-se a soltar um pouquinho.",frase:"\"Soltar o controle não é fraqueza — é confiança.\"",desafio:"Deixe alguém tomar uma decisão hoje — mesmo que você ache que faria diferente. Observe como se sente.",oracao:"Senhor, é difícil soltar. Mas confio que Tu tens o controle que eu não consigo ter. Amém."},
+    {dia:4,titulo:"Minha impaciência",reflexao:"O Colérico tem um relógio interno que anda mais rápido que o dos outros. Você já terminou de pensar enquanto a pessoa ainda está na metade da frase. Mas e se a demora do outro não for incompetência, mas simplesmente um ritmo diferente do seu?",frase:"\"O tempo do outro também é válido.\"",desafio:"Em uma conversa hoje, deixe a pessoa terminar de falar sem interromper. Pratique ouvir até o fim.",oracao:"Pai, dá-me paciência que genuinamente respeita o tempo do outro. Amém."},
+    {dia:5,titulo:"Meu lado vulnerável",reflexao:"Por trás de toda essa força, existe um ser humano que também sente. Que também tem medo. O Colérico tende a esconder isso bem. Mas vulnerabilidade não é fraqueza — é coragem. Hoje, dê-se permissão de ser humano.",frase:"\"Ser vulnerável é corajoso, não fraco.\"",desafio:"Diga a alguém de confiança algo que está sentindo de verdade — sem minimizar, sem resolver, só compartilhar.",oracao:"Senhor, ajuda-me a tirar a armadura quando estou em segurança. Amém."},
+    {dia:6,titulo:"Minha liderança",reflexao:"Você lidera naturalmente. Mas a melhor liderança não é a que manda — é a que serve. É a que enxerga o outro. É a que puxa pelo exemplo. Hoje, pense: como você quer ser lembrado pelas pessoas que você liderou?",frase:"\"O maior líder é aquele que faz os outros se sentirem capazes.\"",desafio:"Faça um elogio sincero a alguém que você lidera ou convive. Reconheça algo que ela faz bem.",oracao:"Deus, que minha liderança seja marcada pelo amor. Que eu inspire, não pressione. Amém."},
+    {dia:7,titulo:"Meu dom é real",reflexao:"Você chegou ao fim da primeira semana. O Colérico foi criado para fazer acontecer. Para iniciar o que outros não têm coragem. Seu dom é real, necessário e bonito. E agora você está aprendendo a usá-lo com mais amor.",frase:"\"Sou forte, sou capaz, e estou crescendo.\"",desafio:"Escreva uma carta curta para si mesmo reconhecendo o quanto você cresceu até aqui.",oracao:"Obrigada, Senhor, por me criar assim. Por cada força, por cada desafio, por cada aprendizado. Amém."}
+  ],
+  fleumatico:[
+    {dia:1,titulo:"Quem eu sou",reflexao:"Você é paz. Em um mundo cheio de ruído, você é a presença que acalma, que equilibra, que estabiliza. O Fleumático é aquele que todos buscam quando a tempestade chega. Sua calma não é fraqueza — é uma força raríssima.",frase:"\"Minha calma é um presente para o mundo.\"",desafio:"Escreva 3 qualidades suas que as pessoas ao redor apreciam — mesmo que você não perceba o quanto.",oracao:"Senhor, obrigada por me criar com essa paz. Que ela seja instrumento de harmonia em cada lugar onde eu estiver. Amém."},
+    {dia:2,titulo:"Minha passividade",reflexao:"O Fleumático prefere a harmonia ao conflito. Isso é lindo — mas às vezes vai longe demais. Você concorda quando não concorda. Cede quando deveria se posicionar. Isso gera paz por fora e tensão por dentro.",frase:"\"Minha voz também importa. Posso me posicionar com paz.\"",desafio:"Hoje, expresse uma opinião sua em uma situação onde normalmente ficaria quieto. Com calma e respeito — mas diga.",oracao:"Pai, dá-me coragem para usar minha voz quando preciso. Amém."},
+    {dia:3,titulo:"Minha procrastinação",reflexao:"O Fleumático tende a adiar. Não por preguiça — mas porque prefere esperar o momento certo. Mas às vezes o momento certo nunca chega e a vida passa esperando. Hoje, dê um passo. Só um. O movimento gera movimento.",frase:"\"Um passo imperfeito vale mais do que a espera perfeita.\"",desafio:"Escolha algo que você tem adiado. Faça o primeiro passo hoje — mesmo que pequeno.",oracao:"Senhor, que eu não desperdice o tempo esperando que seja fácil. Amém."},
+    {dia:4,titulo:"Minha indiferença aparente",reflexao:"As pessoas às vezes interpretam sua calma como desinteresse. Mas você se importa muito — só de forma mais interna. O problema é que quem está ao redor precisa sentir que você se importa. Hoje, mostre o que sente.",frase:"\"Posso mostrar que me importo do meu jeito.\"",desafio:"Demonstre afeto a alguém hoje de uma forma ativa — expresse o quanto essa pessoa importa para você.",oracao:"Deus, que meu amor seja sentido, não apenas existente. Amém."},
+    {dia:5,titulo:"Minha resistência à mudança",reflexao:"O Fleumático ama a estabilidade. Mudanças podem ser desconfortáveis. Mas a vida é feita de mudanças — e quem não aprende a fluir com elas fica preso. Hoje, convide-se a abraçar uma pequena mudança com abertura.",frase:"\"Mudança pode ser o caminho para algo melhor.\"",desafio:"Faça algo diferente na sua rotina hoje. Algo pequeno que normalmente não faria. Observe como se sente.",oracao:"Senhor, que eu confie em Ti quando as mudanças chegarem. Amém."},
+    {dia:6,titulo:"Minha bondade",reflexao:"O Fleumático tem um coração genuinamente bondoso. Você não guarda rancor com facilidade, não quer mal a ninguém, prefere o bem. Essa bondade é um reflexo de algo divino em você. Hoje, reconheça esse dom.",frase:"\"Minha bondade transforma os lugares onde passo.\"",desafio:"Faça um ato de bondade hoje — pequeno, simples, mas intencional.",oracao:"Obrigada, Senhor, por me criar com esse coração bondoso. Que minha bondade seja luz onde eu passar. Amém."},
+    {dia:7,titulo:"Meu dom é real",reflexao:"O mundo precisa da sua calma, da sua paciência, da sua capacidade de trazer paz. Não subestime isso. Em um mundo agitado, você é presença curativa. E agora você está aprendendo a ser tudo isso sem se perder.",frase:"\"Sou paz, sou bondade, e estou crescendo.\"",desafio:"Escreva uma carta para si mesmo celebrando quem você é — com carinho e gratidão.",oracao:"Senhor, obrigada por me criar assim. Que minha paz seja usada para Tua glória. Amém."}
+  ]
+};
+
+// ESTADO
+let state = {
+  tela:"inicio", nome:"", quizStep:0,
+  pontos:{melancolico:0,sanguineo:0,colerico:0,fleumatico:0},
+  tempKey:null, subTela:null, tempAlvo:null, diaJornada:0,
+  escolhendoTemp:false, moduloPendente:null
+};
+
+function setState(patch){ Object.assign(state, patch); render(); }
+
+function tema(){
+  return state.tempKey ? TEMAS[state.tempKey] : {
+    bg:"linear-gradient(160deg,#fdf6ef,#f5e6d3,#ede0d4)",
+    cor:"#a0522d",corTexto:"#5c3d2e",corClara:"#f0e0d0",emoji:"🌷",nome:"",apelido:""
+  };
+}
+
+function capitalize(str){ return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : str; }
+
+function flores(cor="#c2845a"){
+  const itens=["🌸","🌸","🌸","🌼","🌸","🌸","🌼","🌸","🌸","🌼"];
+  const tops=[5,12,30,22,45,58,65,78,88,94];
+  const lefts=[6,85,92,18,4,88,55,10,78,35];
+  const sizes=[26,32,22,30,34,24,30,26,22,28];
+  const opacs=[0.35,0.30,0.28,0.32,0.38,0.30,0.32,0.35,0.28,0.30];
+  return `<div class="flores">${itens.map((f,i)=>`<span class="flor" style="font-size:${sizes[i]}px;top:${tops[i]}%;left:${lefts[i]}%;color:${cor};opacity:${opacs[i]};animation-duration:${4+i*.7}s;animation-delay:${i*.6}s">${f}</span>`).join("")}</div>`;
+}
+
+function navbar(){
+  const t=tema();
+  const telas=["inicio","modulos","agenda","favoritos"];
+  const items=[
+    {icon:"🌼",lbl:"Início",fn:"reiniciar()"},
+    {icon:"🌸",lbl:"Módulos",fn:"setState({tela:'modulos'})"},
+    {icon:"📅",lbl:"Agenda",fn:"setState({tela:'agenda'})"},
+    {icon:"🍀",lbl:"Favoritos",fn:"setState({tela:'favoritos'})"}
+  ];
+  return `<nav class="navbar">${items.map((n,i)=>`
+    <button class="navbtn ${state.tela===telas[i]?"ativo":""}" onclick="${n.fn}">
+      <span class="icon">${n.icon}</span>
+      <span class="lbl" style="color:${state.tela===telas[i]?t.cor:"#888"}">${n.lbl}</span>
+    </button>`).join("")}</nav>`;
+}
+
+function escolherQuiz(key){
+  const novos={...state.pontos}; novos[key]++;
+  const prox=state.quizStep+1;
+  if(prox>=PERGUNTAS.length){
+    const res=Object.entries(novos).sort((a,b)=>b[1]-a[1])[0][0];
+    setState({pontos:novos,tempKey:res,tela:"resultado"});
+  } else { setState({pontos:novos,quizStep:prox}); }
+}
+
+function handleModulo(id){
+  if(!state.tempKey){ setState({escolhendoTemp:true,moduloPendente:id}); return; }
+  setState({tela:"modulo",subTela:id,diaJornada:0,tempAlvo:null});
+}
+
+function escolherTempParaModulo(key){
+  const mod=state.moduloPendente;
+  setState({tempKey:key,escolhendoTemp:false,moduloPendente:null,tela:"modulo",subTela:mod,diaJornada:0,tempAlvo:null});
+}
+
+function reiniciar(){
+  setState({tela:"inicio",nome:"",quizStep:0,
+    pontos:{melancolico:0,sanguineo:0,colerico:0,fleumatico:0},
+    tempKey:null,subTela:null,tempAlvo:null,diaJornada:0,
+    escolhendoTemp:false,moduloPendente:null});
+}
+
+// FAVORITOS
+function carregarFavoritos(){ try{return JSON.parse(localStorage.getItem("florzinha_favoritos")||"[]");}catch(e){return[];} }
+function salvarFavoritoStorage(favs){ localStorage.setItem("florzinha_favoritos",JSON.stringify(favs)); }
+
+function adicionarFavorito(texto, origem){
+  const favs = carregarFavoritos();
+  const jaExiste = favs.find(f => f.texto === texto);
+  if(jaExiste){ alert("Já está nos seus favoritos! 🌸"); return; }
+  favs.unshift({id: Date.now(), texto, origem, data: Date.now()});
+  salvarFavoritoStorage(favs);
+  alert("Salvo nos favoritos! 🌸");
+}
+
+function deletarFavorito(id){
+  const favs = carregarFavoritos().filter(f => f.id !== id);
+  salvarFavoritoStorage(favs);
+  setState({tela:"favoritos"});
+}
+
+// AGENDA
+function carregarAgenda(){ try{return JSON.parse(localStorage.getItem("florzinha_agenda")||"{}");}catch(e){return{};} }
+function salvarAgendaStorage(d){ localStorage.setItem("florzinha_agenda",JSON.stringify(d)); }
+function carregarListas(){ try{return JSON.parse(localStorage.getItem("florzinha_listas")||"[]");}catch(e){return[];} }
+function salvarListasStorage(l){ localStorage.setItem("florzinha_listas",JSON.stringify(l)); }
+
+function adicionarEvento(){
+  const titulo=document.getElementById("ev-titulo")?.value?.trim();
+  const data=document.getElementById("ev-data")?.value;
+  const hora=document.getElementById("ev-hora")?.value;
+  const cat=document.getElementById("ev-cat")?.value;
+  if(!titulo||!data) return;
+  const agenda=carregarAgenda();
+  if(!agenda[data]) agenda[data]=[];
+  agenda[data].push({id:Date.now(),titulo,hora:hora||"",cat:cat||"outro"});
+  agenda[data].sort((a,b)=>(a.hora||"99:99").localeCompare(b.hora||"99:99"));
+  salvarAgendaStorage(agenda);
+  setState({tela:"agenda"});
+}
+
+function deletarEvento(data,id){
+  const agenda=carregarAgenda();
+  if(agenda[data]) agenda[data]=agenda[data].filter(e=>e.id!==id);
+  salvarAgendaStorage(agenda);
+  setState({tela:"agenda"});
+}
+
+function adicionarLista(){
+  const nome=document.getElementById("lista-nome")?.value?.trim();
+  if(!nome) return;
+  const listas=carregarListas();
+  listas.push({id:Date.now(),nome,itens:[]});
+  salvarListasStorage(listas);
+  setState({tela:"agenda",subTela:"listas"});
+}
+
+function adicionarItemLista(listaId){
+  const input=document.getElementById("item-input-"+listaId);
+  const texto=input?.value?.trim();
+  if(!texto) return;
+  const listas=carregarListas();
+  const lista=listas.find(l=>l.id===listaId);
+  if(lista) lista.itens.push({id:Date.now(),texto,feito:false});
+  salvarListasStorage(listas);
+  setState({tela:"agenda",subTela:"listas"});
+}
+
+function toggleItemLista(listaId,itemId){
+  const listas=carregarListas();
+  const lista=listas.find(l=>l.id===listaId);
+  if(lista){const item=lista.itens.find(i=>i.id===itemId);if(item)item.feito=!item.feito;}
+  salvarListasStorage(listas);
+  setState({tela:"agenda",subTela:"listas"});
+}
+
+function deletarItemLista(listaId,itemId){
+  const listas=carregarListas();
+  const lista=listas.find(l=>l.id===listaId);
+  if(lista) lista.itens=lista.itens.filter(i=>i.id!==itemId);
+  salvarListasStorage(listas);
+  setState({tela:"agenda",subTela:"listas"});
+}
+
+function deletarLista(listaId){
+  const listas=carregarListas().filter(l=>l.id!==listaId);
+  salvarListasStorage(listas);
+  setState({tela:"agenda",subTela:"listas"});
+}
+
+function render(){
+  const app=document.getElementById("app");
+  const t=tema();
+
+  // ESCOLHER TEMPERAMENTO
+  if(state.escolhendoTemp){
+    app.innerHTML=`
+    <div style="width:100%;min-height:100vh;background:linear-gradient(160deg,#fdf6ef,#f5e6d3,#ede0d4);position:relative;padding-bottom:90px">
+      ${flores()}
+      <div class="fu" style="position:relative;z-index:1;padding:56px 24px 0">
+        <div style="text-align:center;margin-bottom:24px">
+          <div style="font-size:44px;margin-bottom:12px">🌷</div>
+          <h2 style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:#5c3d2e;margin-bottom:20px">Qual é o seu temperamento?</h2>
+          <input id="inp-nome-mod" class="input-nome" placeholder="Meu nome é..." value="${state.nome!=='florzinha'?state.nome:''}" oninput="state.nome=this.value.trim()||'florzinha'" style="margin-bottom:20px"/>
+        </div>
+        <div class="tempgrid">
+          ${Object.entries(TEMAS).map(([key,tk])=>`
+          <button class="tempcard" onclick="const v=document.getElementById('inp-nome-mod').value.trim();if(v)state.nome=capitalize(v);escolherTempParaModulo('${key}')">
+            <span style="font-size:34px">${tk.emoji}</span>
+            <p style="font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;color:${tk.corTexto}">${tk.nome}</p>
+            <p style="font-family:'Nunito',sans-serif;font-size:11px;color:#888;text-align:center">${tk.apelido}</p>
+          </button>`).join("")}
+        </div>
+      </div>
+      ${navbar()}
+    </div>`;
+    return;
+  }
+
+  // AGENDA
+  if(state.tela==="agenda"){
+    const aba=state.subTela||"agenda";
+    if(aba==="agenda"){
+      const agenda=carregarAgenda();
+      const hoje=new Date();
+      const proxDias=[];
+      for(let i=0;i<30;i++){
+        const d=new Date(hoje);d.setDate(hoje.getDate()+i);
+        const key=d.toISOString().split("T")[0];
+        if(agenda[key]&&agenda[key].length>0) proxDias.push({key,eventos:agenda[key],d});
+      }
+      const cats={consulta:"💊",treino:"🏋️",devocional:"🙏",compromisso:"🛍️",aniversario:"🎂",outro:"⭐"};
+      app.innerHTML=`
+      <div style="width:100%;min-height:100vh;background:linear-gradient(160deg,#fdf6ef,#f5e6d3,#ede0d4);position:relative;padding-bottom:100px">
+        ${flores()}
+        <div class="fu" style="position:relative;z-index:1;padding:52px 22px 0">
+          <div style="text-align:center;margin-bottom:20px">
+            <div style="font-size:28px;margin-bottom:4px">📅</div>
+            <h2 style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#5c3d2e;margin-bottom:4px">Minha Agenda</h2>
+            <p style="font-family:'Nunito',sans-serif;font-size:12px;color:#9e7060;font-style:italic">Organize sua vida com leveza</p>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:20px">
+            <button onclick="setState({tela:'agenda',subTela:'agenda'})" style="flex:1;border:none;border-radius:50px;padding:10px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#c2846a,#a0522d);color:white">📅 Agenda</button>
+            <button onclick="setState({tela:'agenda',subTela:'listas'})" style="flex:1;border:none;border-radius:50px;padding:10px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.7);color:#9e7060">📋 Listas</button>
+          </div>
+          <div class="card" style="margin-bottom:20px">
+            <p style="font-family:'Nunito',sans-serif;font-size:12px;color:#9e7060;margin-bottom:12px;font-weight:700">+ Novo evento</p>
+            <input id="ev-titulo" placeholder="O que você tem?" style="width:100%;padding:10px 14px;border-radius:50px;border:1.5px solid rgba(160,82,45,0.2);font-family:'Nunito',sans-serif;font-size:13px;color:#4a2c1a;background:rgba(255,255,255,0.9);outline:none;margin-bottom:10px"/>
+            <div style="display:flex;gap:8px;margin-bottom:10px">
+              <input id="ev-data" type="date" style="flex:1;padding:10px 12px;border-radius:50px;border:1.5px solid rgba(160,82,45,0.2);font-family:'Nunito',sans-serif;font-size:13px;color:#4a2c1a;background:rgba(255,255,255,0.9);outline:none"/>
+              <input id="ev-hora" type="time" style="flex:1;padding:10px 12px;border-radius:50px;border:1.5px solid rgba(160,82,45,0.2);font-family:'Nunito',sans-serif;font-size:13px;color:#4a2c1a;background:rgba(255,255,255,0.9);outline:none"/>
+            </div>
+            <select id="ev-cat" style="width:100%;padding:10px 14px;border-radius:50px;border:1.5px solid rgba(160,82,45,0.2);font-family:'Nunito',sans-serif;font-size:13px;color:#4a2c1a;background:rgba(255,255,255,0.9);outline:none;margin-bottom:12px">
+              <option value="consulta">💊 Consulta</option>
+              <option value="treino">🏋️ Treino</option>
+              <option value="devocional">🙏 Devocional</option>
+              <option value="compromisso">🛍️ Compromisso</option>
+              <option value="aniversario">🎂 Aniversário</option>
+              <option value="outro" selected>⭐ Outro</option>
+            </select>
+            <button onclick="adicionarEvento()" style="width:100%;border:none;border-radius:50px;padding:11px;background:linear-gradient(135deg,#c2846a,#a0522d);color:white;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer">Salvar evento</button>
+          </div>
+          ${proxDias.length===0?`<div style="text-align:center;padding:32px 0;opacity:0.5"><p style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#9e7060;font-style:italic">Nenhum evento nos próximos dias.</p></div>`:proxDias.map(({key,eventos,d})=>`
+          <div style="margin-bottom:16px">
+            <p style="font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;color:#b8906a;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">${d.toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"})}</p>
+            ${eventos.map(ev=>`
+            <div class="card" style="margin-bottom:8px;display:flex;align-items:center;gap:12px;padding:12px 16px">
+              <span style="font-size:22px">${cats[ev.cat]||"⭐"}</span>
+              <div style="flex:1">
+                <p style="font-family:'Nunito',sans-serif;font-size:14px;font-weight:600;color:#4a2c1a">${ev.titulo}</p>
+                ${ev.hora?`<p style="font-family:'Nunito',sans-serif;font-size:11px;color:#bbb">${ev.hora}</p>`:""}
+              </div>
+              <button onclick="deletarEvento('${key}',${ev.id})" style="background:none;border:none;cursor:pointer;font-size:16px;opacity:0.4;color:#c0392b">🗑️</button>
+            </div>`).join("")}
+          </div>`).join("")}
+        </div>
+        ${navbar()}
+      </div>`;
+    } else {
+      const listas=carregarListas();
+      app.innerHTML=`
+      <div style="width:100%;min-height:100vh;background:linear-gradient(160deg,#fdf6ef,#f5e6d3,#ede0d4);position:relative;padding-bottom:100px">
+        ${flores()}
+        <div class="fu" style="position:relative;z-index:1;padding:52px 22px 0">
+          <div style="text-align:center;margin-bottom:20px">
+            <div style="font-size:28px;margin-bottom:4px">📋</div>
+            <h2 style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#5c3d2e;margin-bottom:4px">Minhas Listas</h2>
+            <p style="font-family:'Nunito',sans-serif;font-size:12px;color:#9e7060;font-style:italic">Organize tudo com carinho</p>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:20px">
+            <button onclick="setState({tela:'agenda',subTela:'agenda'})" style="flex:1;border:none;border-radius:50px;padding:10px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.7);color:#9e7060">📅 Agenda</button>
+            <button onclick="setState({tela:'agenda',subTela:'listas'})" style="flex:1;border:none;border-radius:50px;padding:10px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#c2846a,#a0522d);color:white">📋 Listas</button>
+          </div>
+          <div class="card" style="margin-bottom:20px">
+            <p style="font-family:'Nunito',sans-serif;font-size:12px;color:#9e7060;margin-bottom:12px;font-weight:700">+ Nova lista</p>
+            <div style="display:flex;gap:8px">
+              <input id="lista-nome" placeholder="Ex: Mercado, Roupas..." style="flex:1;padding:10px 14px;border-radius:50px;border:1.5px solid rgba(160,82,45,0.2);font-family:'Nunito',sans-serif;font-size:13px;color:#4a2c1a;background:rgba(255,255,255,0.9);outline:none"/>
+              <button onclick="adicionarLista()" style="border:none;border-radius:50px;padding:10px 18px;background:linear-gradient(135deg,#c2846a,#a0522d);color:white;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer">Criar</button>
+            </div>
+          </div>
+          ${listas.length===0?`<div style="text-align:center;padding:32px 0;opacity:0.5"><p style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#9e7060;font-style:italic">Nenhuma lista ainda.</p></div>`:listas.map(lista=>`
+          <div class="card" style="margin-bottom:16px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <p style="font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;color:#5c3d2e">📋 ${lista.nome}</p>
+              <button onclick="deletarLista(${lista.id})" style="background:none;border:none;cursor:pointer;font-size:14px;opacity:0.4;color:#c0392b">🗑️</button>
+            </div>
+            ${lista.itens.map(item=>`
+            <div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(160,82,45,0.07)">
+              <button onclick="toggleItemLista(${lista.id},${item.id})" style="width:22px;height:22px;border-radius:50%;border:2px solid #c2846a;background:${item.feito?"#c2846a":"transparent"};cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:white;font-size:12px">${item.feito?"✓":""}</button>
+              <p style="flex:1;font-family:'Nunito',sans-serif;font-size:14px;color:${item.feito?"#bbb":"#4a2c1a"};text-decoration:${item.feito?"line-through":"none"}">${item.texto}</p>
+              <button onclick="deletarItemLista(${lista.id},${item.id})" style="background:none;border:none;cursor:pointer;font-size:13px;opacity:0.3;color:#c0392b">✕</button>
+            </div>`).join("")}
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <input id="item-input-${lista.id}" placeholder="Adicionar item..." style="flex:1;padding:8px 14px;border-radius:50px;border:1.5px solid rgba(160,82,45,0.15);font-family:'Nunito',sans-serif;font-size:13px;color:#4a2c1a;background:rgba(255,255,255,0.9);outline:none" onkeydown="if(event.key==='Enter'){adicionarItemLista(${lista.id})}"/>
+              <button onclick="adicionarItemLista(${lista.id})" style="border:none;border-radius:50px;padding:8px 16px;background:linear-gradient(135deg,#c2846a,#a0522d);color:white;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer">+</button>
+            </div>
+          </div>`).join("")}
+        </div>
+        ${navbar()}
+      </div>`;
+    }
+    return;
+  }
+
+  // HISTORICO
+  if(state.tela==="favoritos"){
+    const favs = carregarFavoritos();
+    app.innerHTML=`
+    <div style="width:100%;min-height:100vh;background:linear-gradient(160deg,#fdf6ef,#f5e6d3,#ede0d4);position:relative;padding-bottom:100px">
+      ${flores()}
+      <div class="fu" style="position:relative;z-index:1;padding:52px 22px 0">
+        <div style="text-align:center;margin-bottom:24px">
+          <div style="font-size:36px;margin-bottom:8px">🍀</div>
+          <h2 style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#5c3d2e;margin-bottom:6px">Meus Favoritos</h2>
+          <p style="font-family:'Nunito',sans-serif;font-size:12px;color:#9e7060;font-style:italic">Frases e versículos que tocaram seu coração</p>
+        </div>
+        ${favs.length===0?`
+        <div class="card" style="text-align:center;padding:32px">
+          <p style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#9e7060;font-style:italic">Nenhum favorito ainda.</p>
+          <p style="font-family:'Nunito',sans-serif;font-size:13px;color:#bbb;margin-top:8px">Salve frases tocando no coração 🍀 durante a jornada.</p>
+        </div>
+        `:favs.map(fav=>`
+        <div class="card" style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+            <p style="font-family:'Nunito',sans-serif;font-size:10px;color:#bbb">${fav.origem||""} · ${new Date(fav.data).toLocaleDateString("pt-BR")}</p>
+            <button onclick="deletarFavorito(${fav.id})" style="background:none;border:none;cursor:pointer;font-size:16px;opacity:0.4;color:#c0392b;padding:0 0 0 8px">🗑️</button>
+          </div>
+          <p style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#5c3d2e;line-height:1.65;font-style:italic">${fav.texto}</p>
+        </div>`).join("")}
+      </div>
+      ${navbar()}
+    </div>`;
+    return;
+  }
+
+  // MÓDULO
+  if(state.tela==="modulo"){
+    const sub=state.subTela;
+    if(!state.tempKey||!TEMAS[state.tempKey]){ setState({tela:"modulos"}); return; }
+    const tk=TEMAS[state.tempKey];
+
+    // PROPÓSITO
+    if(sub==="proposito"){
+      const p=PROPOSITO[state.tempKey];
+      app.innerHTML=`
+      <div style="width:100%;min-height:100vh;background:${tk.bg};position:relative;padding-bottom:100px">
+        ${flores(tk.cor)}
+        <div class="fu" style="position:relative;z-index:1;padding:52px 22px 0">
+          <button onclick="setState({tela:'modulos'})" style="background:none;border:none;cursor:pointer;font-size:22px;color:${tk.corTexto};margin-bottom:16px;display:block">←</button>
+          <div style="text-align:center;margin-bottom:24px">
+            <div style="font-size:40px;margin-bottom:8px">🌟</div>
+            <h2 style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:${tk.corTexto};margin-bottom:4px">${p.titulo}</h2>
+            <p style="font-family:'Nunito',sans-serif;font-size:12px;color:${tk.corTexto};opacity:.7;font-style:italic">Seu Temperamento Revela Seu Propósito</p>
+          </div>
+          <div class="card" style="margin-bottom:14px">
+            <p style="font-family:'Nunito',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${tk.corTexto};opacity:.7;margin-bottom:10px">Como Deus vê seu temperamento</p>
+            <p style="font-family:'Nunito',sans-serif;font-size:14px;color:#4a2c1a;line-height:1.75">${p.como_deus}</p>
+          </div>
+          <div class="card" style="margin-bottom:14px">
+            <p style="font-family:'Nunito',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${tk.corTexto};opacity:.7;margin-bottom:10px">Para o que você foi criada</p>
+            <p style="font-family:'Nunito',sans-serif;font-size:14px;color:#4a2c1a;line-height:1.75">${p.feito_para}</p>
+          </div>
+          <div class="card" style="margin-bottom:14px">
+            <p style="font-family:'Nunito',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${tk.corTexto};opacity:.7;margin-bottom:10px">Seus dons para o Reino</p>
+            ${p.dons_reino.map(d=>`<div style="display:flex;gap:10px;margin-bottom:8px"><span style="color:${tk.cor}">•</span><p style="font-family:'Nunito',sans-serif;font-size:14px;color:#4a2c1a;line-height:1.65">${d}</p></div>`).join("")}
+          </div>
+          <div class="card" style="margin-bottom:14px;background:${tk.corClara}">
+            <p style="font-family:'Nunito',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${tk.corTexto};opacity:.7;margin-bottom:10px">Personagem bíblico</p>
+            <p style="font-family:'Nunito',sans-serif;font-size:14px;color:#4a2c1a;line-height:1.75">${p.personagem}</p>
+          </div>
+          <div class="card" style="margin-bottom:14px">
+            <p style="font-family:'Nunito',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${tk.corTexto};opacity:.7;margin-bottom:10px">Sua sabotagem</p>
+            <p style="font-family:'Nunito',sans-serif;font-size:14px;color:#4a2c1a;line-height:1.75;font-style:italic">${p.sabotagem}</p>
+          </div>
+          <div class="card" style="margin-bottom:14px">
+            <p style="font-family:'Nunito',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${tk.corTexto};opacity:.7;margin-bottom:10px">A verdade que liberta</p>
+            <p style="font-family:'Nunito',sans-serif;font-size:14px;color:#4a2c1a;line-height:1.75">${p.verdade}</p>
+          </div>
+          <div class="card" style="margin-bottom:14px;border-left:3px solid ${tk.cor}">
+            <p style="font-family:'Cormorant Garamond',serif;font-size:17px;color:${tk.corTexto};line-height:1.6;font-style:italic">${p.versiculo}</p>
+          </div>
+          <div class="card" style="margin-bottom:24px;background:${tk.corClara}">
+            <p style="font-family:'Nunito',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${tk.corTexto};opacity:.7;margin-bottom:10px">Oração de ativação</p>
+            <p style="font-family:'Nunito',sans-serif;font-size:14px;color:#4a2c1a;line-height:1.75;font-style:italic">${p.oracao}</p>
+          </div>
+        </div>
+        ${navbar()}
+      </div>`;
+      return;
+    }
+
+    // COMO CONVIVER
+    if(sub==="conviver"){
+      const meuTemp=state.tempKey;
+      if(!state.tempAlvo){
+        const outros=Object.entries(TEMAS).filter(([k])=>k!==meuTemp);
+        app.innerHTML=`
+        <div style="width:100%;min-height:100vh;background:${tk.bg};position:relative;padding-bottom:100px">
+          ${flores(tk.cor)}
+          <div class="fu" style="position:relative;z-index:1;padding:52px 22px 0">
+            <button onclick="setState({tela:'modulos'})" style="background:none;border:none;cursor:pointer;font-size:22px;color:${tk.corTexto};margin-bottom:16px;display:block">←</button>
+            <div style="text-align:center;margin-bottom:24px">
+              <div style="font-size:40px;margin-bottom:8px">💞</div>
+              <h2 style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:${tk.corTexto};margin-bottom:8px">Como Conviver com os Diferentes</h2>
+              <p style="font-family:'Nunito',sans-serif;font-size:13px;color:${tk.corTexto};opacity:.7">Você é ${tk.emoji} ${tk.nome}. Com quem quer entender melhor?</p>
+            </div>
+            ${outros.map(([key,tk2])=>`
+            <button class="modcard" onclick="setState({tela:'modulo',subTela:'conviver',tempAlvo:'${key}'})">
+              <div style="width:46px;height:46px;border-radius:13px;background:${tk2.corClara};display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">${tk2.emoji}</div>
+              <div>
+                <p style="font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;color:${tk2.corTexto}">${tk2.nome}</p>
+                <p style="font-family:'Nunito',sans-serif;font-size:12px;color:#666">${tk2.apelido}</p>
+              </div>
+              <span style="color:${tk2.corTexto};opacity:.35;font-size:20px;margin-left:auto">›</span>
+            </button>`).join("")}
+          </div>
+          ${navbar()}
+        </div>`;
+      } else {
+        const alvo=state.tempAlvo;
+        const tkAlvo=TEMAS[alvo];
+        const conv=CONVIVER[meuTemp]?.[alvo]||CONVIVER[alvo]?.[meuTemp];
+        if(!conv){ setState({tempAlvo:null}); return; }
+        app.innerHTML=`
+        <div style="width:100%;min-height:100vh;background:${tk.bg};position:relative;padding-bottom:100px">
+          ${flores(tk.cor)}
+          <div class="fu" style="position:relative;z-index:1;padding:52px 22px 0">
+            <button onclick="setState({tela:'modulo',subTela:'conviver',tempAlvo:null})" style="background:none;border:none;cursor:pointer;font-size:22px;color:${tk.corTexto};margin-bottom:16px;display:block">←</button>
+            <div style="text-align:center;margin-bottom:24px">
+              <div style="font-size:32px;margin-bottom:8px">${tk.emoji} 💞 ${tkAlvo.emoji}</div>
+              <h2 style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:${tk.corTexto}">${conv.titulo}</h2>
+            </div>
+            <div class="card" style="margin-bottom:14px">
+              <p style="font-family:'Nunito',sans-serif;font-size:14px;color:#4a2c1a;line-height:1.75">${conv.texto}</p>
+            </div>
+            <div class="card" style="margin-bottom:14px">
+              <p style="font-family:'Nunito',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${tk.corTexto};opacity:.7;margin-bottom:12px">Dicas práticas</p>
+              ${conv.dicas.map(d=>`<div style="display:flex;gap:10px;margin-bottom:10px"><span style="color:${tk.cor};flex-shrink:0">•</span><p style="font-family:'Nunito',sans-serif;font-size:14px;color:#4a2c1a;line-height:1.65">${d}</p></div>`).join("")}
+            </div>
+            <div class="card" style="margin-bottom:24px;border-left:3px solid ${tk.cor}">
+              <p style="font-family:'Cormorant Garamond',serif;font-size:16px;color:${tk.corTexto};line-height:1.6;font-style:italic">${conv.versiculo}</p>
+            </div>
+          </div>
+          ${navbar()}
+        </div>`;
+      }
+      return;
+    }
+
+    // JORNADA
+    if(sub==="jornada"){
+      const dias=JORNADA[state.tempKey];
+      const diaIdx=state.diaJornada||0;
+      if(diaIdx===0){
+        // Tela de seleção de dia
+        app.innerHTML=`
+        <div style="width:100%;min-height:100vh;background:${tk.bg};position:relative;padding-bottom:100px">
+          ${flores(tk.cor)}
+          <div class="fu" style="position:relative;z-index:1;padding:52px 22px 0">
+            <button onclick="setState({tela:'modulos'})" style="background:none;border:none;cursor:pointer;font-size:22px;color:${tk.corTexto};margin-bottom:16px;display:block">←</button>
+            <div style="text-align:center;margin-bottom:24px">
+              <div style="font-size:40px;margin-bottom:8px">🌱</div>
+              <h2 style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:${tk.corTexto};margin-bottom:8px">Jornada de 7 Dias</h2>
+              <p style="font-family:'Nunito',sans-serif;font-size:13px;color:${tk.corTexto};opacity:.7">Semana 1 — Me Conhecendo · ${tk.emoji} ${tk.nome}</p>
+            </div>
+            ${dias.map((d,i)=>`
+            <button class="dia-btn" onclick="setState({tela:'modulo',subTela:'jornada',diaJornada:${i+1}})"
+              style="background:rgba(255,255,255,0.82);color:${tk.corTexto};border:1.5px solid rgba(255,255,255,0.94)">
+              <div style="width:36px;height:36px;border-radius:50%;background:${tk.corClara};display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;color:${tk.corTexto};flex-shrink:0">
+                ${i+1}
+              </div>
+              <div>
+                <p style="font-family:'Nunito',sans-serif;font-size:14px;font-weight:700">Dia ${i+1}</p>
+                <p style="font-family:'Nunito',sans-serif;font-size:12px;color:#888">${d.titulo}</p>
+              </div>
+              <span style="color:${tk.corTexto};opacity:.35;font-size:20px;margin-left:auto">›</span>
+            </button>`).join("")}
+          </div>
+          ${navbar()}
+        </div>`;
+      } else {
+        const dia=dias[diaIdx-1];
+        app.innerHTML=`
+        <div style="width:100%;min-height:100vh;background:${tk.bg};position:relative;padding-bottom:100px">
+          ${flores(tk.cor)}
+          <div class="fu" style="position:relative;z-index:1;padding:52px 22px 0">
+            <button onclick="setState({tela:'modulo',subTela:'jornada',diaJornada:0})" style="background:none;border:none;cursor:pointer;font-size:22px;color:${tk.corTexto};margin-bottom:16px;display:block">←</button>
+            <div style="text-align:center;margin-bottom:24px">
+              <p style="font-family:'Nunito',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:${tk.corTexto};opacity:.7;margin-bottom:4px">Dia ${diaIdx} de 7</p>
+              <div style="height:4px;background:rgba(0,0,0,0.08);border-radius:2px;overflow:hidden;margin-bottom:16px"><div style="height:100%;width:${(diaIdx/7)*100}%;background:${tk.cor};border-radius:2px"></div></div>
+              <h2 style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:${tk.corTexto}">${dia.titulo}</h2>
+            </div>
+            <div class="card" style="margin-bottom:14px">
+              <p style="font-family:'Nunito',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${tk.corTexto};opacity:.7;margin-bottom:10px">🌿 Reflexão</p>
+              <p style="font-family:'Nunito',sans-serif;font-size:14px;color:#4a2c1a;line-height:1.75">${dia.reflexao}</p>
+            </div>
+            <div class="card" style="margin-bottom:14px;background:${tk.corClara};border-left:3px solid ${tk.cor}">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <p style="font-family:'Nunito',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${tk.corTexto};opacity:.7">💬 Frase do dia</p>
+                <button onclick="adicionarFavorito('${dia.frase}','Jornada Dia ${diaIdx}')" style="background:none;border:none;cursor:pointer;font-size:18px;opacity:0.6" title="Salvar nos favoritos">🍀</button>
+              </div>
+              <p style="font-family:'Cormorant Garamond',serif;font-size:18px;color:${tk.corTexto};line-height:1.5;font-style:italic">${dia.frase}</p>
+            </div>
+            <div class="card" style="margin-bottom:14px">
+              <p style="font-family:'Nunito',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${tk.corTexto};opacity:.7;margin-bottom:10px">🎯 Desafio</p>
+              <p style="font-family:'Nunito',sans-serif;font-size:14px;color:#4a2c1a;line-height:1.75">${dia.desafio}</p>
+            </div>
+            <div class="card" style="margin-bottom:24px;background:${tk.corClara}">
+              <p style="font-family:'Nunito',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${tk.corTexto};opacity:.7;margin-bottom:10px">🙏 Oração</p>
+              <p style="font-family:'Nunito',sans-serif;font-size:14px;color:#4a2c1a;line-height:1.75;font-style:italic">${dia.oracao}</p>
+            </div>
+            ${diaIdx<7?`
+            <button class="btn" onclick="setState({tela:'modulo',subTela:'jornada',diaJornada:${diaIdx+1}})"
+              style="background:${tk.cor};color:white;box-shadow:0 6px 18px ${tk.cor}44">
+              Próximo dia →
+            </button>`:`
+            <div class="card" style="text-align:center;margin-bottom:16px">
+              <p style="font-family:'Cormorant Garamond',serif;font-size:20px;color:${tk.corTexto};font-style:italic;margin-bottom:8px">🌸 Você completou a Semana 1!</p>
+              <p style="font-family:'Nunito',sans-serif;font-size:13px;color:#888">Parabéns pela sua jornada! Continue florindo. 🌸</p>
+            </div>`}
+          </div>
+          ${navbar()}
+        </div>`;
+      }
+      return;
+    }
+  }
+
+  // INÍCIO
+  if(state.tela==="inicio"){
+    app.innerHTML=`
+    <div style="width:100%;min-height:100vh;background:linear-gradient(160deg,#fdf6ef,#f5e6d3,#ede0d4);position:relative;display:flex;flex-direction:column;padding-bottom:80px">
+      ${flores()}
+      <div class="fu" style="position:relative;z-index:1;flex:1;display:flex;flex-direction:column;justify-content:center;padding:50px 28px 0;text-align:center">
+        <div style="margin-bottom:28px">
+          <p style="font-family:'Nunito',sans-serif;font-size:10px;letter-spacing:4px;color:#9e7060;text-transform:uppercase;margin-bottom:12px">bem-vinda</p>
+          <h1 style="font-family:'Cormorant Garamond',serif;font-size:58px;font-weight:400;color:#3d2314;line-height:1;margin-bottom:10px">Florzinha</h1>
+          <p style="font-family:'Nunito',sans-serif;font-size:13px;color:#9e7060;font-style:italic">Se conhecer é florescer.</p>
+        </div>
+        <div class="card" style="margin-bottom:32px">
+          <p style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#3d2314;line-height:1.6;font-style:italic;text-align:center;margin-bottom:20px">"Você foi criada única.<br>Seu temperamento é o jeito<br>que Deus escolheu te fazer."</p>
+          <div style="display:flex;justify-content:center;gap:18px">
+            ${[["🌙","Melancólico"],["🌸","Sanguíneo"],["🔥","Colérico"],["🕊️","Fleumático"]].map(([em,nm])=>`
+            <div style="text-align:center"><div style="font-size:24px;margin-bottom:5px">${em}</div><p style="font-family:'Nunito',sans-serif;font-size:10px;color:#7a4f38;font-weight:600">${nm}</p></div>`).join("")}
+          </div>
+        </div>
+        <button class="btn" onclick="setState({tela:'boas-vindas'})"
+          style="background:linear-gradient(135deg,#c2846a,#a0522d);color:white;box-shadow:0 8px 22px rgba(160,82,45,0.25);padding:18px;margin-bottom:10px">
+          <div style="font-size:15px;font-weight:700;margin-bottom:3px">Quero descobrir meu temperamento</div>
+          <div style="font-size:11px;opacity:0.85;font-weight:400">Responda ao quiz e conheça quem você é</div>
+        </button>
+        <button class="btn" onclick="setState({tela:'modulos'})"
+          style="background:rgba(255,255,255,0.75);color:#5c3d2e;border:1.5px solid rgba(160,82,45,0.2);padding:18px;backdrop-filter:blur(8px)">
+          <div style="font-size:15px;font-weight:700;margin-bottom:3px">Já sei meu temperamento</div>
+          <div style="font-size:11px;opacity:0.7;font-weight:400;color:#9e7060">Acesse os módulos diretamente</div>
+        </button>
+      </div>
+      ${navbar()}
+    </div>`;
+    return;
+  }
+
+  // BOAS-VINDAS
+  if(state.tela==="boas-vindas"){
+    app.innerHTML=`
+    <div style="width:100%;min-height:100vh;background:linear-gradient(160deg,#fdf6ef,#f5e6d3,#ede0d4);position:relative;padding-bottom:90px">
+      ${flores()}
+      <div class="fu" style="position:relative;z-index:1;padding:58px 26px;display:flex;flex-direction:column;min-height:100vh;justify-content:center">
+        <div style="text-align:center;margin-bottom:26px">
+          <div style="font-size:52px;margin-bottom:14px">🌸</div>
+          <h2 style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:#5c3d2e;line-height:1.2;margin-bottom:20px">Olá, florzinha!<br>Que alegria ter você aqui.</h2>
+          <div class="card" style="text-align:left;margin-bottom:22px">
+            <p style="font-family:'Nunito',sans-serif;font-size:14px;color:#5c3d2e;line-height:1.7;margin-bottom:10px">Estou aqui para te ajudar a se conhecer de um jeito profundo, amoroso e cheio de fé.</p>
+            <p style="font-family:'Nunito',sans-serif;font-size:14px;color:#5c3d2e;line-height:1.7">Vamos caminhar juntas, com calma e sem pressa.</p>
+          </div>
+          <p style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#7a4f38;font-style:italic;margin-bottom:22px">Preparada para florescer?<br>Me conta: qual é o seu nome?</p>
+        </div>
+        <input id="inp-nome" class="input-nome" placeholder="Meu nome é..." value="${state.nome}" oninput="state.nome=this.value" onkeydown="if(event.key==='Enter'&&this.value.trim()){setState({nome:capitalize(this.value.trim()),tela:'quiz'})}"/>
+        <button class="btn" onclick="if(document.getElementById('inp-nome').value.trim()){setState({nome:capitalize(document.getElementById('inp-nome').value.trim()),tela:'quiz'})}" style="background:linear-gradient(135deg,#c2846a,#a0522d);color:white;box-shadow:0 8px 20px rgba(160,82,45,0.25)">Continuar →</button>
+      </div>
+      ${navbar()}
+    </div>`;
+    return;
+  }
+
+  // QUIZ
+  if(state.tela==="quiz"){
+    const perg=PERGUNTAS[state.quizStep];
+    const prog=((state.quizStep+1)/PERGUNTAS.length)*100;
+    const icons=["🌙","🌸","🔥","🕊️"];
+    app.innerHTML=`
+    <div style="width:100%;min-height:100vh;background:linear-gradient(160deg,#fdf6ef,#f5e6d3,#ede0d4);position:relative;padding-bottom:90px">
+      ${flores()}
+      <div style="position:relative;z-index:1;padding:52px 22px 30px">
+        <button onclick="reiniciar()" style="background:none;border:none;cursor:pointer;font-size:22px;color:#a0522d;margin-bottom:18px;display:block">←</button>
+        <p style="font-family:'Nunito',sans-serif;font-size:11px;letter-spacing:2px;color:#9e7060;text-transform:uppercase;margin-bottom:6px">${state.nome} · ${state.quizStep+1} de ${PERGUNTAS.length}</p>
+        <div class="prog-bar"><div class="prog-fill" style="width:${prog}%"></div></div>
+        <div class="fu">
+          <h2 style="font-family:'Cormorant Garamond',serif;font-size:23px;font-weight:400;color:#4a2c1a;line-height:1.45;margin-bottom:22px">${perg.q}</h2>
+          ${perg.ops.map((op,i)=>`
+          <button class="qop" onclick="escolherQuiz('${op.k}')">
+            <span style="opacity:.45;font-size:16px;flex-shrink:0">${icons[i]}</span>${op.t}
+          </button>`).join("")}
+        </div>
+      </div>
+      ${navbar()}
+    </div>`;
+    return;
+  }
+
+  // RESULTADO
+  if(state.tela==="resultado"){
+    const tk=TEMAS[state.tempKey];
+    app.innerHTML=`
+    <div style="width:100%;min-height:100vh;background:${tk.bg};position:relative;padding-bottom:100px">
+      ${flores(tk.cor)}
+      <div class="fu" style="position:relative;z-index:1;padding:56px 24px 0;text-align:center">
+        <p style="font-family:'Nunito',sans-serif;font-size:11px;letter-spacing:2.5px;color:${tk.corTexto};text-transform:uppercase;margin-bottom:8px;opacity:.75">${state.nome}, você é</p>
+        <div style="font-size:64px;margin-bottom:10px">${tk.emoji}</div>
+        <h1 style="font-family:'Cormorant Garamond',serif;font-size:46px;font-weight:300;color:${tk.corTexto};margin-bottom:4px">${tk.nome}</h1>
+        <p style="font-family:'Nunito',sans-serif;font-size:13px;color:${tk.corTexto};opacity:.8;margin-bottom:22px;font-style:italic">${tk.apelido}</p>
+        <div class="card" style="margin-bottom:14px;text-align:left">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <p style="font-family:'Nunito',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${tk.corTexto};opacity:.7">📖 Versículo do seu temperamento</p>
+            <button onclick="adicionarFavorito('${tk.versiculo.texto} — ${tk.versiculo.ref}','Resultado Quiz')" style="background:none;border:none;cursor:pointer;font-size:18px;opacity:0.6" title="Salvar nos favoritos">🍀</button>
+          </div>
+          <p style="font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:#3a2820;line-height:1.6;margin-bottom:8px">"${tk.versiculo.texto}"</p>
+          <p style="font-family:'Nunito',sans-serif;font-size:12px;color:${tk.corTexto};text-align:right">— ${tk.versiculo.ref}</p>
+        </div>
+        <div class="card" style="margin-bottom:14px;text-align:left">
+          <div style="display:flex;gap:14px">
+            <div style="flex:1">
+              <p style="font-family:'Nunito',sans-serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:${tk.corTexto};opacity:.7;margin-bottom:8px">✨ Seus dons</p>
+              ${tk.dons.map(d=>`<p style="font-family:'Nunito',sans-serif;font-size:12px;color:#3a2820;margin-bottom:5px;line-height:1.4">• ${d}</p>`).join("")}
+            </div>
+            <div style="width:1px;background:${tk.corClara};flex-shrink:0"></div>
+            <div style="flex:1">
+              <p style="font-family:'Nunito',sans-serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:${tk.corTexto};opacity:.7;margin-bottom:8px">🤍 Seus desafios</p>
+              ${tk.desafios.map(d=>`<p style="font-family:'Nunito',sans-serif;font-size:12px;color:#3a2820;margin-bottom:5px;line-height:1.4">• ${d}</p>`).join("")}
+            </div>
+          </div>
+        </div>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:17px;color:${tk.corTexto};font-style:italic;margin-bottom:20px;opacity:.9">"Deus não errou ao te criar assim. ${tk.emoji}"</p>
+        <button class="btn" onclick="setState({tela:'modulos'})" style="background:${tk.cor};color:white;box-shadow:0 8px 22px ${tk.cor}55">Continuar minha jornada ${tk.emoji}</button>
+        <button class="btn" onclick="reiniciar()" style="border:1.5px solid ${tk.corClara};background:rgba(255,255,255,0.5);color:${tk.corTexto};font-size:14px">Refazer o quiz</button>
+      </div>
+      ${navbar()}
+    </div>`;
+    return;
+  }
+
+  // MÓDULOS
+  if(state.tela==="modulos"){
+    const modulos=[
+      {id:"jornada",emoji:"🌱",label:"Jornada de 7 Dias",desc:"Semana 1 — Me Conhecendo"},
+      {id:"conviver",emoji:"💞",label:"Como Conviver com os Diferentes",desc:"Entenda quem está ao seu lado"},
+      {id:"proposito",emoji:"🌟",label:"Seu Temperamento Revela Seu Propósito",desc:"Descubra seu chamado"}
+    ];
+    app.innerHTML=`
+    <div style="width:100%;min-height:100vh;background:${t.bg};position:relative;padding-bottom:100px">
+      ${flores(t.cor)}
+      <div class="fu" style="position:relative;z-index:1;padding:52px 22px 0">
+        <div style="text-align:center;margin-bottom:24px">
+          <div style="font-size:38px;margin-bottom:8px">${state.tempKey?t.emoji:"🌼"}</div>
+          ${state.tempKey?`
+          <h2 style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:${t.corTexto};margin-bottom:6px">${state.nome?state.nome+", por":"Por"} onde quer continuar?</h2>
+          <p style="font-family:'Nunito',sans-serif;font-size:12px;color:${t.corTexto};opacity:.7;font-style:italic">temperamento: <strong>${t.nome}</strong></p>
+          <button onclick="setState({tempKey:null})" style="background:none;border:none;cursor:pointer;font-family:'Nunito',sans-serif;font-size:11px;color:${t.corTexto};opacity:.5;text-decoration:underline;margin:8px 0 16px">Trocar temperamento</button>
+          `:`<h2 style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#5c3d2e;margin-bottom:16px">Escolha um módulo</h2>`}
+        </div>
+        ${modulos.map(mod=>`
+        <button class="modcard" onclick="handleModulo('${mod.id}')">
+          <div style="width:46px;height:46px;border-radius:13px;background:${t.corClara};display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">${mod.emoji}</div>
+          <div style="flex:1">
+            <p style="font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;color:${t.corTexto};margin-bottom:3px">${mod.label}</p>
+            <p style="font-family:'Nunito',sans-serif;font-size:12px;color:#666">${mod.desc}</p>
+          </div>
+          <span style="color:${t.corTexto};opacity:.35;font-size:20px;flex-shrink:0">›</span>
+        </button>`).join("")}
+        ${!state.tempKey?`<button class="btn" onclick="setState({tela:'boas-vindas'})" style="background:linear-gradient(135deg,#c2846a,#a0522d);color:white;margin-top:8px">Descobrir pelo quiz 🌸</button>`:""}
+
+      </div>
+      ${navbar()}
+    </div>`;
+    return;
+  }
+}
+
+render();
+</script>
+</body>
+</html>
